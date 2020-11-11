@@ -80,7 +80,6 @@ function runProjection(nodes, angle, dist, invert, stroke, strokeColor, strokeAl
   nodes.forEach(node=>{
     let strokes = stroke && ((strokeColor && [strokePaint]) || (<any>node).strokes);
     let fills = fill && ((fillColor && [fillPaint]) || (<any>node).fills);
-    console.log(strokes, fills)
     selection.push(...projectNode(node, angle, dist, invert, strokes, fills));
   });
 
@@ -117,7 +116,7 @@ function clone(val) {
 }
 
 function projectNode(node:SceneNode, angle, dist, invert, strokes, fills){
-  console.log({angle}, {dist}, {invert}, {strokes}, {fills})
+  //console.log({angle}, {dist}, {invert}, {strokes}, {fills})
   let parent = node.parent;
   //convert <N>node to VectorNode (in-place)
   let clonedNode = node.clone();
@@ -129,7 +128,7 @@ function projectNode(node:SceneNode, angle, dist, invert, strokes, fills){
 
   //clone VectorNetwork properties
   let network = clone(vector.vectorNetwork);
-  console.log(network);
+  //console.log(network);
 
   //sort segments by distance along projection angle;
   let center = getNetworkCenter(network);
@@ -223,7 +222,7 @@ function projectNode(node:SceneNode, angle, dist, invert, strokes, fills){
 
 function addTangentPoints(vector:VectorNode, angle){
   let network = clone(vector.vectorNetwork);
-  console.log(network);
+  //console.log(network);
   //iterate segments
   let w = 0;
   network.segments.forEach((_seg, s) => {
@@ -345,7 +344,7 @@ function addTangentPoints(vector:VectorNode, angle){
 
       //append second bisection to segments (to prevent insertions)
       newSegmentIndex = network.segments.push({
-        start: start2, 
+        start: start2,
         end: end2, 
         tangentStart: tangentStart2, 
         tangentEnd: tangentEnd2

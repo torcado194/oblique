@@ -400,7 +400,7 @@ document.getElementById('update').onclick = () => {
 }
 
 onmessage = (e) => {
-  console.log(e)
+  //console.log(e)
   switch (e.data.pluginMessage) {
     case 'enableUpdate':
       canUpdate = true;
@@ -428,7 +428,7 @@ function project(update){
   fillAlpha = fillAlpha || 1;
   fillAlpha = Math.max(0, Math.min(1, fillAlpha));
   let group = document.getElementById('param-use-fill') && document.getElementById('param-group').classList.contains('selected');
-  console.log(strokeColor, fillColor);
+  //console.log(strokeColor, fillColor);
   parent.postMessage({ pluginMessage: { type: update?'update':'project', angle, dist, invert, stroke, strokeColor, strokeAlpha, fill, fillColor, fillAlpha, group } }, '*');
 }
 
@@ -602,13 +602,13 @@ document.querySelectorAll('*[tooltip]').forEach(el => {
     if(!tooltipHovers.has(el)){
       tooltipHovers.set(el, setTimeout(() => {
         let rect = el.getBoundingClientRect()
-        console.log(rect, el.clientHeight)
+        //console.log(rect, el.clientHeight)
         tooltipContentEl.textContent = el.getAttribute('tooltip');
         tooltipEl.classList.add('show');
         let tooltipTop = rect.top + el.clientHeight + 8;
         tooltipEl.style.top = tooltipTop;
         tooltipEl.style.left = Math.max(0,Math.min(window.innerWidth-tooltipEl.clientWidth, rect.left + el.clientWidth/2 - tooltipEl.clientWidth/2));
-        console.log(tooltipEl.getBoundingClientRect().width/2)
+        //console.log(tooltipEl.getBoundingClientRect().width/2)
         tooltipArrowEl.style.left = rect.left + el.clientWidth/2 - 6;
         tooltipArrowEl.style.top = tooltipTop - 6;
         //tooltipHovers.delete(el);
@@ -617,7 +617,7 @@ document.querySelectorAll('*[tooltip]').forEach(el => {
   });
   el.addEventListener('mouseleave', e => {
     if(tooltipHovers.get(el)){
-      console.log('d')
+      //console.log('d')
       clearTimeout(tooltipHovers.get(el));
       tooltipEl.classList.remove('show');
       tooltipHovers.delete(el);

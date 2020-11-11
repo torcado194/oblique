@@ -73,7 +73,6 @@ function runProjection(nodes, angle, dist, invert, stroke, strokeColor, strokeAl
     nodes.forEach(node => {
         let strokes = stroke && ((strokeColor && [strokePaint]) || node.strokes);
         let fills = fill && ((fillColor && [fillPaint]) || node.fills);
-        console.log(strokes, fills);
         selection.push(...projectNode(node, angle, dist, invert, strokes, fills));
     });
     if (group) {
@@ -109,7 +108,7 @@ function clone(val) {
     throw 'unknown';
 }
 function projectNode(node, angle, dist, invert, strokes, fills) {
-    console.log({ angle }, { dist }, { invert }, { strokes }, { fills });
+    //console.log({angle}, {dist}, {invert}, {strokes}, {fills})
     let parent = node.parent;
     //convert <N>node to VectorNode (in-place)
     let clonedNode = node.clone();
@@ -119,7 +118,7 @@ function projectNode(node, angle, dist, invert, strokes, fills) {
     addTangentPoints(vector, angle);
     //clone VectorNetwork properties
     let network = clone(vector.vectorNetwork);
-    console.log(network);
+    //console.log(network);
     //sort segments by distance along projection angle;
     let center = getNetworkCenter(network);
     let segments = network.segments;
@@ -205,7 +204,7 @@ function projectNode(node, angle, dist, invert, strokes, fills) {
 }
 function addTangentPoints(vector, angle) {
     let network = clone(vector.vectorNetwork);
-    console.log(network);
+    //console.log(network);
     //iterate segments
     let w = 0;
     network.segments.forEach((_seg, s) => {
