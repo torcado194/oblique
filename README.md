@@ -1,3 +1,8 @@
+check out the plugin here:
+
+[https://www.figma.com/community/plugin/876352455198080607/oblique](https://www.figma.com/community/plugin/876352455198080607/oblique)
+
+
 **create oblique projections of any shape**. useful for creating shadows, 3d depth, visual perspective, and more!
 
 
