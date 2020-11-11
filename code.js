@@ -119,6 +119,7 @@ function projectNode(node, angle, dist, invert, strokes, fills) {
     addTangentPoints(vector, angle);
     //clone VectorNetwork properties
     let network = clone(vector.vectorNetwork);
+    console.log(network);
     //sort segments by distance along projection angle;
     let center = getNetworkCenter(network);
     let segments = network.segments;
@@ -204,6 +205,7 @@ function projectNode(node, angle, dist, invert, strokes, fills) {
 }
 function addTangentPoints(vector, angle) {
     let network = clone(vector.vectorNetwork);
+    console.log(network);
     //iterate segments
     let w = 0;
     network.segments.forEach((_seg, s) => {
@@ -253,42 +255,77 @@ function addTangentPoints(vector, angle) {
             let h2 = { x: q12.x - newVertex.x, y: q12.y - newVertex.y };
             let h3 = { x: q23.x - newVertex.x, y: q23.y - newVertex.y };
             let h4 = { x: q3.x - p4new.x, y: q3.y - p4new.y };
-            //replace base segment with first bisection
-            network.segments.splice(w, 1, {
-                start: seg.start,
-                end: newVertexIndex,
-                tangentStart: h1,
-                tangentEnd: h2
-            });
-            //append second bisection to segments (to prevent insertions)
-            let newSegmentIndex = network.segments.push({
-                start: newVertexIndex,
-                end: seg.end,
-                tangentStart: h3,
-                tangentEnd: h4
-            }) - 1;
             //console.log('...', network);
-            //update loops that contain base segment
+            //debugger;
+            let loop;
+            let loopIndex;
+            let foundLoop = false;
+            let flipVerts = false;
             network.regions.forEach(r => {
                 r.loops.forEach(l => {
-                    //check if segment is contained in loop
-                    let loopIndex = l.indexOf(w);
-                    if (loopIndex >= 0) {
-                        //console.log(l)
-                        //add bisected segments to loop
-                        // the first segment's index matches the original segment's index
-                        // so only the second index needs to be inserted
-                        //check if loop is reversed, if so add before first segment
-                        if (l.length > 1 && network.segments[l[loopIndex]].start == network.segments[l[(loopIndex + 1) % l.length]].end) {
-                            l.splice(loopIndex, 0, newSegmentIndex);
+                    if (l.length > 1) {
+                        let li = l.indexOf(w);
+                        if (li >= 0) {
+                            loop = l;
+                            loopIndex = li;
+                            let seg1 = network.segments[loop[loopIndex]];
+                            let seg2 = network.segments[loop[mod(loopIndex - 1, loop.length)]];
+                            //check if segment vertices are flipped, relative to previous segment
+                            if (seg1.end == seg2.start || seg1.end == seg2.end) {
+                                flipVerts = true;
+                            }
+                            foundLoop = true;
+                            return;
                         }
-                        else {
-                            l.splice(mod(loopIndex + 1, l.length), 0, newSegmentIndex);
-                        }
-                        //console.log(l)
                     }
                 });
+                if (foundLoop) {
+                    return;
+                }
             });
+            let newSegmentIndex;
+            let start1 = seg.start;
+            let end1 = seg.end;
+            let start2 = seg.start;
+            let end2 = seg.end;
+            let tangentStart1 = h1;
+            let tangentEnd1 = h2;
+            let tangentStart2 = h3;
+            let tangentEnd2 = h4;
+            if (flipVerts) {
+                start1 = newVertexIndex;
+                end2 = newVertexIndex;
+                //flip the handles too
+                tangentStart1 = h3;
+                tangentEnd1 = h4;
+                tangentStart2 = h1;
+                tangentEnd2 = h2;
+            }
+            else {
+                end1 = newVertexIndex;
+                start2 = newVertexIndex;
+            }
+            //replace base segment with first bisection
+            network.segments.splice(w, 1, {
+                start: start1,
+                end: end1,
+                tangentStart: tangentStart1,
+                tangentEnd: tangentEnd1
+            });
+            //append second bisection to segments (to prevent insertions)
+            newSegmentIndex = network.segments.push({
+                start: start2,
+                end: end2,
+                tangentStart: tangentStart2,
+                tangentEnd: tangentEnd2
+            }) - 1;
+            //console.log('!!!', network);
+            if (foundLoop) {
+                //add bisected segments to loop
+                // the first segment's index matches the original segment's index
+                // so only the second index needs to be inserted
+                loop.splice(mod(loopIndex + 1, loop.length), 0, newSegmentIndex);
+            }
             //set working segment to newly inserted segment, 
             // in case of second tangent (which will always be in the second bisection)
             w = newSegmentIndex;
@@ -297,15 +334,6 @@ function addTangentPoints(vector, angle) {
     //console.log({network});
     //update vectorNetwork
     vector.vectorNetwork = network;
-    /*
-      //position
-      let transform = clone(node.relativeTransform);
-      vector.relativeTransform = transform;
-    
-      //place
-      node.parent.appendChild(vector);
-    
-      figma.currentPage.selection = [vector]; */
 }
 function findBezierTangents(p1, p2, p3, p4, target) {
     let epsilon = 1e-1; //threshold
