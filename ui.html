@@ -1,0 +1,700 @@
+<style>
+  html, body {
+    overflow: hidden;
+  }
+  body {
+    font: normal 400 14px Inter,sans-serif;
+    color: #555;
+  }
+  body.sliding {
+    cursor: ew-resize !important;
+  }
+  button {
+    display: inline-block;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    margin: 1px 6px 1px 0;
+    padding: 5px 16px 5px 16px;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    outline: none;
+    font-family: "Inter", sans-serif;
+    line-height: 16px;
+    font-weight: 500;
+    font-size: 14px;
+    user-select: none;
+    background-color: #eee;
+  }
+  button.primary {
+    color: #ffffff;
+    background-color: #18a0fb;
+    
+    letter-spacing: 0.01em;
+  }
+  button:active {
+    border: 2px solid #18a0fb;
+    box-shadow: 0 0 0 2px #eee inset;
+  }
+  button.primary:active {
+    border: 2px solid #18a0fb;
+    box-shadow: 0 0 0 2px #fff inset;
+  }
+  .slider {
+    user-select: none;
+  }
+  .values {
+    display: flex;
+    width: 100%;
+    align-items: center;
+  }
+  .values.polar .cartesian, .values.cartesian .polar {
+    display: none
+  }
+  .value {
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    /* padding: 4px; */
+    flex: 0 1 16px;
+    margin: 4px 4px 4px 0;
+    position: relative;
+  }
+  .value > * {
+    margin: 4px;
+  }
+  .value .divider {
+    height: 26px;
+    width: 1px;
+    background: #ddd;
+    margin: 0;
+  }
+  .value.disabled {
+    /* color: #b3b3b3; */
+    opacity: 0.5;
+  }
+  .value:focus-within {
+    border: 1px solid #18a0fb;
+    outline: 1px solid #18a0fb;
+    outline-offset: -2px;
+  }
+  .value .icon {
+    flex: 0 0 16px;
+    margin-right: 5px;
+    cursor: ew-resize;
+  }
+  .value input[type="text"] {
+    flex: 1 1 60px;
+    width: 60px;
+    border: none;
+    font: inherit;
+    color: inherit;
+  }
+  .value input[type="text"]:focus {
+    border: none;
+    outline: none;
+  }
+  .values .switcher {
+    border-radius: 3px;
+    user-select: none;
+  }
+  .values .switcher:hover {
+    background: rgba(0,0,0,.06);
+  }
+  .values .switcher:hover svg {
+    /* stroke: #fff; */
+  }
+  .values .switcher:active {
+    box-shadow: 0 0 0 2px #18a0fb inset;
+  }
+  .values .switcher .icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  .option input[type="checkbox"] {
+    margin: 4px 6px;
+  }
+  .option input[type="color"] {
+    padding: 0;
+    border: none !important;
+    background: none;
+    width: 16px;
+    height: 16px;
+    /* margin: 0 5px 0 2px; */
+    margin-left: 8px;
+    outline: none;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.1);
+    border-radius: 2px;
+  }
+  .option input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+  .option input[type="color"]::-webkit-color-swatch {
+    border: none;
+  }
+  .option input[type="text"] {
+    flex: 1 1 16px;
+    width: 16px;
+    border: none;
+    font: inherit;
+    color: inherit;
+  }
+  .option input[type="text"].disabled {
+    opacity: 0.5;
+  }
+  .option input[type="text"]:focus {
+    border: none;
+    outline: none;
+  }
+  .option p {
+    margin: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+  }
+  .selectable {
+    margin: 0 6px 0 0px;
+    border-radius: 2px;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 0 3px inset #fff;
+    box-sizing: border-box;
+    user-select: none;
+  }
+  .selectable:hover {
+    border: 1px solid #ddd;
+    box-shadow: 0 0 0 2px inset #fff;
+  }
+  .selectable.selected {
+    background: #e6e6e6;
+  }
+  .selectable:active {
+    border: 1px solid #18a0fb;
+    outline: 1px solid #18a0fb;
+    outline-offset: -2px;
+  }
+  .strikethrough {
+    width: calc(100% - 38px);
+    left: 30px;
+    /* border: 1px solid white; */
+    border-radius: 2px;
+    margin: 0;
+    height: 1px;
+    background: #333;
+    position: absolute;
+    display: none;
+  }
+  .strikethrough.show {
+    display: block;
+  }
+
+  #tooltip {
+    background-color: #050505;
+    border-radius: 2px;
+    position: fixed;
+    /* left: 24px; */
+    display: none;
+    z-index: 999;
+    margin: 0 6px 6px 6px;
+  }
+  #tooltip.show {
+    display: block;
+  }
+  #tooltip .arrow {
+    position: fixed;
+    top: -5px;
+    left: 6px;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    z-index: 12;
+  }
+  #tooltip .arrow.up {
+    border-top: none;
+    border-bottom-color: #050505;
+  }
+  #tooltip .content {
+    padding: 8px;
+    color: #eee;
+    font: inherit;
+    font-size: 12px;
+  }
+
+  #update, #update-text {
+    position: absolute;
+    left: 35px;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.2s;
+    transition-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
+    pointer-events: none;
+  }
+  #update.show, #update-text.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+  #update {
+    height: 28px;
+    top: 0;
+    z-index: 2;
+  }
+  span.disabled {
+    opacity: 0.5;
+  }
+</style>
+<div id="tooltip">
+  <div class="arrow up"></div>
+  <div class="content"></div>
+</div>
+<div class="values polar">
+  <div class="value">
+    <div class="icon polar slider" tooltip="projection angle">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 2L12.2426 3.75736M10 6L12.2426 3.75736M12.2426 3.75736C11.1569 2.67157 9.65685 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14C9.65685 14 11.1569 13.3284 12.2426 12.2426" stroke="#B3B3B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <!-- <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"> -->
+        <!-- <path d="M11.0355 11.0355C10.1307 11.9404 8.88071 12.5 7.5 12.5C4.73858 12.5 2.5 10.2614 2.5 7.5C2.5 4.73858 4.73858 2.5 7.5 2.5C8.88071 2.5 10.1307 3.05964 11.0355 3.96447" stroke="#B3B3B3" stroke-linecap="round"/> -->
+        <!-- <path d="M13 2L8.5 6.5" stroke="#B3B3B3" stroke-linecap="round" stroke-linejoin="round"/> -->
+      <!-- </svg> -->
+    </div>
+    <div class="icon cartesian slider" tooltip="projection x amount">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 4L12 12M12 4L4 12" stroke="#B3B3B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <input id="param-value1" type="text" value="135" validation="[^\d\.-]">
+  </div>
+  <div class="value">
+    <div class="icon polar slider" tooltip="projection distance">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 13L13 3M13 3H7M13 3V9" stroke="#B3B3B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <!-- <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"> -->
+        <!-- <path d="M3.5 11.5L11.5 3.5M11.5 3.5H6.5M11.5 3.5V8.5" stroke="#B3B3B3" stroke-linecap="round" stroke-linejoin="round"/> -->
+      <!-- </svg> -->
+    </div>
+    <div class="icon cartesian slider" tooltip="projection y amount">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 4L8 8M12 4L8 8M8 12.5V8" stroke="#B3B3B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <input id="param-value2" type="text" value="10" validation="[^\d\.-]">
+  </div>
+  <div class="switcher" tooltip="switch between angle/distance and x/y modes">
+    <div class="icon">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#333" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 5L8 2L11 5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5 11L8 14L11 11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </div>
+</div>
+<div class="option stroke">
+  <div id="param-stroke" class="icon selectable selected" tooltip="toggle wireframe (strokes)">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#333" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 2H2V14M14 2V14H2M14 2L2 14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div class="value">
+    <input id="param-use-stroke" type="checkbox" tooltip="use custom stroke color">
+    <!-- <div id="use-stroke-strikethrough" class="strikethrough show"></div> -->
+    <div class="divider"></div>
+    <input type="color">
+    <input id="param-stroke-color" class="disabled" type="text" value="000000" validation="[^a-fA-F0-9]" style="width: 69px;">
+    <div class="divider"></div>
+    <input id="param-stroke-alpha" class="disabled" type="text" value="100%" validation="[^\d\.-]" padding="_%" style="width: 44px;">
+  </div>
+</div>
+<div class="option fill">
+  <div id="param-fill" class="icon selectable selected" tooltip="toggle faces (fills)">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="#333" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="8" cy="8" r="7"/>
+      </svg>
+      
+  </div>
+  <div class="value">
+    <input id="param-use-fill" type="checkbox" tooltip="use custom fill color">
+    <!-- <div id="use-fill-strikethrough" class="strikethrough show"></div> -->
+    <div class="divider"></div>
+    <input type="color">
+    <input id="param-fill-color" class="disabled" type="text" value="000000" validation="[^a-fA-F0-9]" style="width: 69px;">
+    <div class="divider"></div>
+    <input id="param-fill-alpha" class="disabled" type="text" value="100%" validation="[^\d\.-]" padding="_%" style="width: 44px;">
+  </div>
+</div>
+<div class="option">
+  <div id="param-invert" class="selectable" tooltip="make a group of projected shapes">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 5H2C1.44772 5 1 5.44772 1 6V14C1 14.5523 1.44772 15 2 15H10C10.5523 15 11 14.5523 11 14V12H9V13H3V7H4V5Z" fill="#333333"/>
+      <path d="M9 8V7H8V5H10C10.5523 5 11 5.44772 11 6V8H9Z" fill="#333333"/>
+      <path d="M9 10H6V7M6 5V2H9M11 2H14V5M14 7V10H11" stroke="#333333" stroke-width="2" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <p>invert projection</p>
+</div>
+<div class="option">
+  <div id="param-group" class="selectable" tooltip="project toward camera">
+    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2H14V4M14 7V9M14 12V14H12M9 14H7M4 14H2V12M2 9V7M2 4V2H4M7 2H9" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="8" cy="8" r="3" fill="#333"/>
+    </svg>
+  </div>
+  <p>group projection</p>
+</div>
+<br/>
+<div class="option">
+  <div id="param-auto-update" class="selectable selected" tooltip="cause changes to automatically update projection">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#333" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 6L12.2426 3.75736C9.89949 1.41422 6.1005 1.41422 3.75736 3.75736C3.10237 4.41235 2.63047 5.18109 2.34167 6M14 6H10M14 6V2M2 10L3.75736 12.2426C6.1005 14.5858 9.89949 14.5858 12.2426 12.2426C12.8976 11.5877 13.3695 10.8189 13.6583 10M2 10L2 14M2 10L6 10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <span id="update-disable" class="disabled"><button id="update">update</button></span>
+  <p id="update-text" class="show">auto-update projection</p>
+</div>
+<br/>
+<button id="project" class="primary">project</button>
+<button id="cancel">cancel</button>
+<script>
+
+let method = 'polar';
+
+let angle = 135,
+    dist = 10;
+
+let x = dist * Math.cos(angle*Math.PI/180),
+    y = dist * Math.sin(angle*Math.PI/180);
+  
+let strokeEnabled = true,
+    strokeColor
+
+let sliding = false,
+    slidingInput,
+    slidingStartX = 0,
+    slidingStartValue = 0;
+
+let autoUpdateEl = document.getElementById('param-auto-update');
+let updateButtonEl = document.getElementById('update');
+let updateDisableEl = document.getElementById('update-disable');
+let updateTextEl = document.getElementById('update-text');
+
+let canUpdate = false;
+document.getElementById('project').onclick = () => {
+  project();
+}
+
+document.getElementById('update').onclick = () => {
+  update();
+}
+
+onmessage = (e) => {
+  console.log(e)
+  switch (e.data.pluginMessage) {
+    case 'enableUpdate':
+      canUpdate = true;
+      updateDisableEl.classList.remove('disabled');
+      break;
+    case 'disableUpdate':
+      canUpdate = false;
+      updateDisableEl.classList.add('disabled');
+      break;
+  }
+}
+
+function project(update){
+  let invert = document.getElementById('param-invert').classList.contains('selected');
+  let stroke = document.getElementById('param-stroke').classList.contains('selected');
+  let strokeColor = document.getElementById('param-use-stroke').checked && document.getElementById('param-stroke-color').value;
+  let strokeAlpha = document.getElementById('param-use-stroke').checked && document.getElementById('param-stroke-alpha').value;
+  strokeAlpha && (strokeAlpha = parseFloat(strokeAlpha.replace('%',''))/100);
+  strokeAlpha = strokeAlpha || 1;
+  strokeAlpha = Math.max(0, Math.min(1, strokeAlpha));
+  let fill = document.getElementById('param-fill').classList.contains('selected');
+  let fillColor = document.getElementById('param-use-fill').checked && document.getElementById('param-fill-color').value;
+  let fillAlpha = document.getElementById('param-use-fill').checked && document.getElementById('param-fill-alpha').value;
+  fillAlpha && (fillAlpha = parseFloat(fillAlpha.replace('%',''))/100);
+  fillAlpha = fillAlpha || 1;
+  fillAlpha = Math.max(0, Math.min(1, fillAlpha));
+  let group = document.getElementById('param-use-fill') && document.getElementById('param-group').classList.contains('selected');
+  console.log(strokeColor, fillColor);
+  parent.postMessage({ pluginMessage: { type: update?'update':'project', angle, dist, invert, stroke, strokeColor, strokeAlpha, fill, fillColor, fillAlpha, group } }, '*');
+}
+
+function update(){
+  if(canUpdate){
+    project(true);
+  }
+}
+let updateThrottle = throttle(() => {
+  if(autoUpdateEl.classList.contains('selected')){
+    update();
+  }
+}, 60, true);
+
+document.getElementById('cancel').onclick = () => {
+  parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
+}
+
+document.querySelectorAll('.selectable').forEach(el => {
+  el.addEventListener('click', () => {
+    let selected = el.classList.toggle('selected');
+    let siblingValueEl = el.parentElement.querySelector('.value');
+    if(siblingValueEl){
+      if(selected){
+        siblingValueEl.classList.remove('disabled');
+      } else {
+        siblingValueEl.classList.add('disabled');
+      }
+    }
+    updateThrottle();
+
+    if(el === autoUpdateEl){
+      if(selected){
+        updateButtonEl.classList.remove('show');
+        updateTextEl.classList.add('show');
+      } else {
+        updateButtonEl.classList.add('show');
+        updateTextEl.classList.remove('show');
+      }
+    }
+  });
+});
+
+document.querySelectorAll('input[type="checkbox"]').forEach(el => {
+  el.addEventListener('input', e => {
+    updateThrottle();
+  });
+});
+
+document.querySelectorAll('input[type="text"]').forEach(el => {
+  el.addEventListener('focus', e => {
+    el.select();
+  });
+});
+
+document.querySelectorAll('input[type="text"]').forEach(el => {
+  if(el.getAttribute('validation')){
+    el.addEventListener('blur', e => {
+      el.value = el.value.replace(new RegExp(el.getAttribute('validation'), 'g'), '');
+      if(el.getAttribute('padding')){
+        el.value = el.getAttribute('padding').replace('_', el.value);
+      }
+      update();
+    });
+  }
+});
+
+document.getElementById('param-use-stroke').addEventListener('input', (e) => {
+  if(e.target.checked){
+    //document.getElementById('use-stroke-strikethrough').classList.remove('show');
+    document.getElementById('param-stroke-color').classList.remove('disabled');
+    document.getElementById('param-stroke-alpha').classList.remove('disabled');
+  } else {
+    //document.getElementById('use-stroke-strikethrough').classList.add('show');
+    document.getElementById('param-stroke-color').classList.add('disabled');
+    document.getElementById('param-stroke-alpha').classList.add('disabled');
+  }
+});
+
+document.getElementById('param-use-fill').addEventListener('input', (e) => {
+  if(e.target.checked){
+    //document.getElementById('use-fill-strikethrough').classList.remove('show');
+    document.getElementById('param-fill-color').classList.remove('disabled');
+    document.getElementById('param-fill-alpha').classList.remove('disabled');
+  } else {
+    //document.getElementById('use-fill-strikethrough').classList.add('show');
+    document.getElementById('param-fill-color').classList.add('disabled');
+    document.getElementById('param-fill-alpha').classList.add('disabled');
+  }
+});
+
+let valuesEl = document.querySelector('.values');
+let value1El = valuesEl.querySelectorAll('input')[0];
+let value2El = valuesEl.querySelectorAll('input')[1];
+document.querySelector('.switcher').onclick = () => {
+  method = method === 'polar' ? 'cartesian' : 'polar';
+  valuesEl.classList.remove('polar', 'cartesian');
+  valuesEl.classList.add(method);
+  
+  if(method == 'polar'){
+    value1El.value = round(angle);
+    value2El.value = round(dist);
+  } else {
+    value1El.value = round(x);
+    value2El.value = round(y);
+  }
+}
+
+document.querySelectorAll('input[type="color"]').forEach(el => {
+  let siblingInputEl = el.parentElement.querySelector('input[type="text"]')
+  if(siblingInputEl){
+    el.addEventListener('input', e => {
+      siblingInputEl.value = el.value.replace('#', '').toUpperCase();
+      updateThrottle();
+    });
+    siblingInputEl.addEventListener('input', e => {
+      siblingInputEl.value = siblingInputEl.value.replace('#', '');
+      el.value = '#' + siblingInputEl.value;
+      updateThrottle();
+    });
+  }
+});
+
+value1El.addEventListener('input', updateValue);
+value2El.addEventListener('input', updateValue);
+
+document.querySelectorAll('.slider').forEach(el => {
+  el.addEventListener('mousedown', e => {
+    sliding = true;
+    slidingStartX = e.clientX;
+    slidingInput = el.parentElement.querySelector('input');
+    slidingStartValue = parseFloat(slidingInput.value);
+    document.body.classList.add('sliding');
+  });
+});
+document.addEventListener('mouseup', e => {
+  sliding = false;
+  document.body.classList.remove('sliding');
+});
+let resetSlide = false;
+document.addEventListener('mousemove', e => {
+  if(sliding){
+    if(resetSlide){
+      resetSlide = false;
+      slidingStartX = e.clientX;
+      slidingStartValue = parseFloat(slidingInput.value);
+    }
+    let offset = e.clientX - slidingStartX;
+    let scale = e.shiftKey ? 0.1 : 1;
+    slidingInput.value = round(slidingStartValue + offset*scale);
+    updateValue({target: slidingInput});
+  }
+});
+document.addEventListener('keydown', e => {
+  if(e.key === 'Shift' && !e.repeat){
+    resetSlide = true;
+  }
+});
+document.addEventListener('keyup', e => {
+  if(e.key === 'Shift' && !e.repeat){
+    resetSlide = true;
+  }
+});
+
+let tooltipEl = document.getElementById('tooltip');
+let tooltipArrowEl = tooltipEl.querySelector('.arrow');
+let tooltipContentEl = tooltipEl.querySelector('.content');
+let tooltipHovers = new Map();
+document.querySelectorAll('*[tooltip]').forEach(el => {
+  el.addEventListener('mouseover', e => {
+    if(!tooltipHovers.has(el)){
+      tooltipHovers.set(el, setTimeout(() => {
+        let rect = el.getBoundingClientRect()
+        console.log(rect, el.clientHeight)
+        tooltipContentEl.textContent = el.getAttribute('tooltip');
+        tooltipEl.classList.add('show');
+        let tooltipTop = rect.top + el.clientHeight + 8;
+        tooltipEl.style.top = tooltipTop;
+        tooltipEl.style.left = Math.max(0,Math.min(window.innerWidth-tooltipEl.clientWidth, rect.left + el.clientWidth/2 - tooltipEl.clientWidth/2));
+        console.log(tooltipEl.getBoundingClientRect().width/2)
+        tooltipArrowEl.style.left = rect.left + el.clientWidth/2 - 6;
+        tooltipArrowEl.style.top = tooltipTop - 6;
+        //tooltipHovers.delete(el);
+      }, 300));
+    }
+  });
+  el.addEventListener('mouseleave', e => {
+    if(tooltipHovers.get(el)){
+      console.log('d')
+      clearTimeout(tooltipHovers.get(el));
+      tooltipEl.classList.remove('show');
+      tooltipHovers.delete(el);
+    }
+  });
+});
+document.addEventListener('mousedown', e => {
+  tooltipHovers.forEach((v, k) => {
+    clearTimeout(v);
+    tooltipHovers.delete(k);
+    tooltipEl.classList.remove('show');
+  });
+});
+
+function updateValue(e){
+  let valueIndex = +(value2El === e.target);
+  if(e.target.getAttribute('validation')){
+    e.target.value = e.target.value.replace(new RegExp(e.target.getAttribute('validation'), 'g'), '');
+  }
+  let val = parseFloat(e.target.value);
+  if(isNaN(val)){
+    e.target.classList.add('error');
+    return;
+  } else {
+    e.target.classList.remove('error');
+  }
+  if(method === 'polar'){
+    if(valueIndex === 0){
+      angle = val;
+    } else {
+      dist = val;
+    }
+    updateCartesian();
+  } else {
+    if(valueIndex === 0){
+      x = val;
+    } else {
+      y = val;
+    }
+    updatePolar();
+  }
+  updateThrottle();
+};
+function updatePolar(){
+  angle = Math.atan2(y,x)*180/Math.PI;
+  dist = Math.sqrt(y*y + x*x);
+}
+function updateCartesian(){
+  x = dist * Math.cos(angle*Math.PI/180);
+  y = dist * Math.sin(angle*Math.PI/180);
+}
+
+function round(x){
+  return Math.round(x * 1000) / 1000;
+}
+
+//https://gist.github.com/beaucharman/e46b8e4d03ef30480d7f4db5a78498ca
+function throttle(callback, wait, immediate = false) {
+  let timeout = null 
+  let initialCall = true
+  
+  return function() {
+    const callNow = immediate && initialCall
+    const next = () => {
+      callback.apply(this, arguments)
+      timeout = null
+    }
+    
+    if (callNow) { 
+      initialCall = false
+      next()
+    }
+
+    if (!timeout) {
+      timeout = setTimeout(next, wait)
+    }
+  }
+}
+
+</script>

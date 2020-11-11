@@ -1,0 +1,25 @@
+{
+  "name": "oblique",
+  "version": "1.0.0",
+  "description": "Create oblique projections",
+  "main": "code.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "author": "torcado",
+  "license": "MIT",
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.16.1",
+    "@types/source-map": "^0.5.2",
+    "css-loader": "^4.2.1",
+    "html-webpack-inline-source-plugin": "0.0.10",
+    "html-webpack-plugin": "^4.3.0",
+    "source-map": "^0.7.3",
+    "style-loader": "^1.2.1",
+    "ts-loader": "^8.0.2",
+    "typescript": "^3.9.7",
+    "url-loader": "^4.1.0",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
+  }
+}
