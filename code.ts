@@ -347,7 +347,7 @@ function addTangentPoints(vector:VectorNode, angle){
       newSegmentIndex = network.segments.push({
         start: start2, 
         end: end2, 
-        tangentStart: tangentStart2,
+        tangentStart: tangentStart2, 
         tangentEnd: tangentEnd2
       })-1;
 
